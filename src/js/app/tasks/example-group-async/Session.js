@@ -9,17 +9,9 @@ class Session extends React.PureComponent {
     componentDidMount() {
         IntroStore.startIntro(introSteps, () => {});
 
-        document.querySelector(".introjs-skipbutton").addEventListener("click", 
-        () => {
-                window.LogUI.startScreenCapture();
-                if (window.hasOwnProperty('LogUI')) {
-                    this.startLogUI();
-                };
-            }
-        );
-
-
-       
+        if (window.hasOwnProperty('LogUI')) {
+            this.startLogUI();
+        };
     }
 
     startLogUI(){
@@ -41,64 +33,10 @@ class Session extends React.PureComponent {
             applicationSpecificData: {
             },
             trackingConfiguration: {
-            // 'querybox-focus': {
-            //     selector: '#input-box',
-            //     event: 'focus',
-            //     name: 'QUERYBOX_FOCUS',
-            // },
-            // 'querybox-losefocus': {
-            //     selector: '#input-box',
-            //     event: 'blur',
-            //     name: 'QUERYBOX_BLUR',
-            // },
-            // 'left-rail-item-mousemovements': {
-            //     selector: '#left-rail-results li',
-            //     event: 'mouseHover',
-            //     properties: {
-            //         mouseenter: {
-            //             name: 'LEFT_RAIL_RESULT_HOVER_IN',
-            //         },
-            //         mouseleave: {
-            //             name: 'LEFT_RAIL_RESULT_HOVER_OUT',
-            //         }
-            //     },
-            //     metadata: [
-            //         {
-            //             nameForLog: 'resultRank',
-            //             sourcer: 'elementAttribute',
-            //             lookFor: 'data-rank',
-            //         }
-            //     ]
-            // },
-                // 'querybox' : {
-                // 	selector: '.form-control',
-                // 	event: 'input',
-                // 	name: 'inputgrouptest',
-                // 	metadata: [
-                // 		{
-                // 			nameForLog: 'input value',
-                // 			sourcer: 'elementAttribute',
-                // 			lookFor: 'value',
-                // 		}
-                // 	]
-                // },
-                'mouseclick' : {
-                    selector: '#header',
-                    event: 'click',
-                    name: 'click-test',
-                    // properties: {
-                    // 	primary: {
-                    // 		name: 'MOUSE_CLICK',
-                    // 	},
-                    // 	secondary: {
-                    // 		name: 'MOUSE_CLICK',
-                    // 	},
-                    // },
-                },
-                'query-submission': {
+                'query-submission': { //Required for calculating time between queries (SearchX only).
                     selector: '.form',
                     event: 'formSubmission',
-                    name: 'QUERY_SUBMITTED2',
+                    name: 'QUERY_SUBMITTED',
                     properties: {
                         includeValues: [
                             {
@@ -114,24 +52,26 @@ class Session extends React.PureComponent {
             },
         };
 
+        document.querySelector(".introjs-skipbutton").addEventListener("click", () => LogUI.startScreenCapture()); //Required for starting screen capturing when the study intro is finished (SearchX only).
 
+        //Required for calculating dwell time (SearchX only).
         var prev = 0;
         var observer = new MutationObserver(function (mutationRecords) {
-            if(document.getElementsByClassName("modal").length === 1 && prev === 0){
+            if(document.getElementsByClassName("modal").length == 1 && prev == 0){
                 window.LogUI.logCustomMessage({
                     name: 'MODAL_DIALOG_SHOW'
                 });
                 prev = 1;
-            } else if(document.getElementsByClassName("modal").length === 0 && prev === 1){
+            } else if(document.getElementsByClassName("modal").length == 0 && prev == 1){
                 window.LogUI.logCustomMessage({
                     name: 'MODAL_DIALOG_HIDE'
                 });
                 prev = 0;
             };
         });
-
         observer.observe(document.querySelector(".SearchResultsContainer").firstElementChild, {subTree: true, childList: true});
 
+        //Required for tracking total clicks on the page.
         document.onclick = function(){
             window.LogUI.logCustomMessage({
                     name: 'click'
