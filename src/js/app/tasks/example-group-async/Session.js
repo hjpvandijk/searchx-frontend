@@ -52,17 +52,17 @@ class Session extends React.PureComponent {
             },
         };
 
-        document.querySelector(".introjs-skipbutton").addEventListener("click", () => LogUI.startScreenCapture()); //Required for starting screen capturing when the study intro is finished (SearchX only).
+        document.querySelector(".introjs-skipbutton").addEventListener("click", () => window.LogUI.startScreenCapture()); //Required for starting screen capturing when the study intro is finished (SearchX only).
 
         //Required for calculating dwell time (SearchX only).
         var prev = 0;
         var observer = new MutationObserver(function (mutationRecords) {
-            if(document.getElementsByClassName("modal").length == 1 && prev == 0){
+            if(document.getElementsByClassName("modal").length === 1 && prev === 0){
                 window.LogUI.logCustomMessage({
                     name: 'MODAL_DIALOG_SHOW'
                 });
                 prev = 1;
-            } else if(document.getElementsByClassName("modal").length == 0 && prev == 1){
+            } else if(document.getElementsByClassName("modal").length === 0 && prev === 1){
                 window.LogUI.logCustomMessage({
                     name: 'MODAL_DIALOG_HIDE'
                 });
