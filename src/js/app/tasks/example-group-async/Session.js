@@ -17,8 +17,8 @@ class Session extends React.PureComponent {
     startLogUI(){
         let configurationObject = {
             logUIConfiguration: {
-            endpoint: 'ws://localhost/ws/endpoint/',
-            authorisationToken: 'eyJ0eXBlIjoibG9nVUktYXV0aG9yaXNhdGlvbi1vYmplY3QiLCJhcHBsaWNhdGlvbklEIjoiYzRhOTVkYTItYjNjOS00OGMyLWJlMDMtYmQ4ZGZkMzUxY2ZiIiwiZmxpZ2h0SUQiOiI3YzllMzhhOS0wOTY0LTQ0MmYtYThjNy1jNmQ4YzhmMWQ0YTcifQ:1lg5HA:ySmnMRxx4LODDBcRRQgDWqZn8M8d_hEFW_9EoT3diSE',  // The authentication token.
+            endpoint: 'ws://80.112.171.123/ws/endpoint/',
+            authorisationToken: 'eyJ0eXBlIjoibG9nVUktYXV0aG9yaXNhdGlvbi1vYmplY3QiLCJhcHBsaWNhdGlvbklEIjoiZTM4NmQyMjEtMWI0NS00ODFkLWJkM2EtZWY5ZDI2NzllNjBiIiwiZmxpZ2h0SUQiOiIwMTNmZTA4ZC1kNzc3LTQ1ZGUtOWJhNC0zOGU4ODQwODFlZDAifQ:1ltr6c:-4qFI5yd51gIcqqE-tWb80-Go1lhfMdfbBXdZkPNmbE',  // The authentication token.
             verbose: true,
             browserEvents: {
                 // See the Browser Events Wiki page.
@@ -33,7 +33,7 @@ class Session extends React.PureComponent {
             applicationSpecificData: {
             },
             trackingConfiguration: {
-                'query-submission': { //Required for calculating time between queries (SearchX only).
+                'query-submission': { //Required for calculating time between queries/
                     selector: '.form',
                     event: 'formSubmission',
                     name: 'QUERY_SUBMITTED',
@@ -52,33 +52,39 @@ class Session extends React.PureComponent {
             },
         };
 
-        document.querySelector(".introjs-skipbutton").addEventListener("click", () => window.LogUI.startScreenCapture()); //Required for starting screen capturing when the study intro is finished (SearchX only).
+        document.querySelector(".introjs-skipbutton").addEventListener("click", () => { //Required for starting screen capturing when the study intro is finished.
+            window.LogUI.init(configurationObject);
 
-        //Required for calculating dwell time (SearchX only).
-        var prev = 0;
-        var observer = new MutationObserver(function (mutationRecords) {
-            if(document.getElementsByClassName("modal").length === 1 && prev === 0){
+            //Required for calculating dwell time.
+            var prev = 0;
+            var observer = new MutationObserver(function (mutationRecords) {
+                if(document.getElementsByClassName("modal").length === 1 && prev === 0){
+                    window.LogUI.logCustomMessage({
+                        name: 'MODAL_DIALOG_SHOW'
+                    });
+                    prev = 1;
+                } else if(document.getElementsByClassName("modal").length === 0 && prev === 1){
+                    window.LogUI.logCustomMessage({
+                        name: 'MODAL_DIALOG_HIDE'
+                    });
+                    prev = 0;
+                };
+            });
+            observer.observe(document.querySelector(".SearchResultsContainer").firstElementChild, {subTree: true, childList: true});
+
+            //Required for tracking total clicks on the page.
+            document.onclick = function(){
                 window.LogUI.logCustomMessage({
-                    name: 'MODAL_DIALOG_SHOW'
-                });
-                prev = 1;
-            } else if(document.getElementsByClassName("modal").length === 0 && prev === 1){
-                window.LogUI.logCustomMessage({
-                    name: 'MODAL_DIALOG_HIDE'
-                });
-                prev = 0;
+                        name: 'click'
+                    });
             };
-        });
-        observer.observe(document.querySelector(".SearchResultsContainer").firstElementChild, {subTree: true, childList: true});
 
-        //Required for tracking total clicks on the page.
-        document.onclick = function(){
-            window.LogUI.logCustomMessage({
-                    name: 'click'
-                });
-        };
 
-        window.LogUI.init(configurationObject);
+            window.LogUI.startScreenCapture()
+        }); 
+
+        
+
     };
 
     render() {
