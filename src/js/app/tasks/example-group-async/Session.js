@@ -33,7 +33,7 @@ class Session extends React.PureComponent {
             applicationSpecificData: {
             },
             trackingConfiguration: {
-                'query-submission': { //Required for calculating time between queries/
+                'query-submission': { //Required for calculating time between queries
                     selector: '.form',
                     event: 'formSubmission',
                     name: 'QUERY_SUBMITTED',
