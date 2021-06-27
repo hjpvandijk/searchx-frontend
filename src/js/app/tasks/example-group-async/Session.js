@@ -8,7 +8,84 @@ import IntroStore from "../../../stores/IntroStore";
 class Session extends React.PureComponent {
     componentDidMount() {
         IntroStore.startIntro(introSteps, () => {});
+
+        if (window.hasOwnProperty('LogUI')) {
+            this.startLogUI();
+        };
     }
+
+    startLogUI(){
+        let configurationObject = {
+            logUIConfiguration: {
+            endpoint: 'ws://80.112.171.123/ws/endpoint/',
+            authorisationToken: 'eyJ0eXBlIjoibG9nVUktYXV0aG9yaXNhdGlvbi1vYmplY3QiLCJhcHBsaWNhdGlvbklEIjoiZTM4NmQyMjEtMWI0NS00ODFkLWJkM2EtZWY5ZDI2NzllNjBiIiwiZmxpZ2h0SUQiOiIwMTNmZTA4ZC1kNzc3LTQ1ZGUtOWJhNC0zOGU4ODQwODFlZDAifQ:1ltr6c:-4qFI5yd51gIcqqE-tWb80-Go1lhfMdfbBXdZkPNmbE',  // The authentication token.
+            verbose: true,
+            browserEvents: {
+                // See the Browser Events Wiki page.
+                eventsWhileScrolling: false,
+                URLChanges: false,
+                contextMenu: false,
+                pageFocus: false,
+                trackCursor: false,
+                pageResize: false
+            }
+            },
+            applicationSpecificData: {
+            },
+            trackingConfiguration: {
+                'query-submission': { //Required for calculating time between queries
+                    selector: '.form',
+                    event: 'formSubmission',
+                    name: 'QUERY_SUBMITTED',
+                    properties: {
+                        includeValues: [
+                            {
+                                nameForLog: 'completeQuery',
+                                sourcer: 'elementAttribute',
+                                selector: '.form-control',
+                                lookFor: 'value',
+                            }
+                        ]
+                    }
+                }
+            
+            },
+        };
+
+        document.querySelector(".introjs-skipbutton").addEventListener("click", () => { //Required for starting screen capturing when the study intro is finished.
+            window.LogUI.init(configurationObject);
+
+            //Required for calculating dwell time.
+            var prev = 0;
+            var observer = new MutationObserver(function (mutationRecords) {
+                if(document.getElementsByClassName("modal").length === 1 && prev === 0){
+                    window.LogUI.logCustomMessage({
+                        name: 'MODAL_DIALOG_SHOW'
+                    });
+                    prev = 1;
+                } else if(document.getElementsByClassName("modal").length === 0 && prev === 1){
+                    window.LogUI.logCustomMessage({
+                        name: 'MODAL_DIALOG_HIDE'
+                    });
+                    prev = 0;
+                };
+            });
+            observer.observe(document.querySelector(".SearchResultsContainer").firstElementChild, {subTree: true, childList: true});
+
+            //Required for tracking total clicks on the page.
+            document.onclick = function(){
+                window.LogUI.logCustomMessage({
+                        name: 'click'
+                    });
+            };
+
+
+            window.LogUI.startScreenCapture()
+        }); 
+
+        
+
+    };
 
     render() {
         const task = AccountStore.getTask();
